@@ -1,0 +1,9 @@
+n0 = int(input())
+n = 0
+k = 0
+while n < n0:
+    m1, m2, m3, m4 =  map(int, input().split())
+    if m1 != 2 and m2 != 2 and m3 != 2 and m4 != 2 and m1 != 3 and m2 != 3 and m3 != 3 and m4 != 3:
+        k +=1
+    n += 1
+print(k)
