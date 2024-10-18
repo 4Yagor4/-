@@ -1,0 +1,20 @@
+# Найти средний рост мальчиков и девочек в классе. Всего в классе N человек 
+
+N = int(input("Количество учеников"))
+n = 0
+Boys =[]
+Girls =[]
+while n < N:
+    print("Введите пол 'm' - мальчик, 'f' - девочка ")
+    s = input()
+    print("Введите рост")
+    if s == 'm':
+        hight = int(input())
+        Boys.append(hight)
+    else:
+        hight = int(input())
+        Girls.append(hight)
+    n += 1
+AB = (sum(Boys) / len(Boys))
+AG = (sum(Girls) / len(Girls))
+print("Средний рост мальчиков", AB, "Средний рост девочек", AG)
