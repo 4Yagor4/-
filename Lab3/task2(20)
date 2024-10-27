@@ -1,0 +1,15 @@
+Если 1-й отрицательный элемент массива расположен до мини-мального, то найти сумму элементов с четными индексами, иначе - с нечетными индексами.
+arr = list(map(int, input("").split()))
+a = -1
+minidx = 0
+for i in range(len(arr)):
+    if arr[i] < 0 and a == -1:
+        a = i
+    if arr[i] < arr[minidx]:
+        minidx = i
+if a != -1 and a < minidx:
+
+    result = sum(arr[i] for i in range(len(arr)) if i % 2 == 0)
+else:
+    result = sum(arr[i] for i in range(len(arr)) if i % 2 != 0)
+print("Результат:", result)
