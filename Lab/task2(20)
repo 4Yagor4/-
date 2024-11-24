@@ -1,0 +1,31 @@
+№16.В двух заданных матрицах удалить все столбцы, не содержащие нулевых элементов. Удаление столбца матрицы оформить в виде метода.
+
+
+from random import randint
+list1 = [[randint(-1, 1) for _ in range(5)] for _ in range(5)]
+list2 = [[randint(-10, 10) for _ in range(5)] for _ in range(5)]
+
+def f(x):
+    s = set()
+    for i in range(len(x)):
+        for j in range(len(x[i])):
+            if x[i][j] == 0:
+                s.add(j)
+
+    a = [[] for i in range(len(x))]
+    for i in range(len(x)):
+        for j in range(len(x[i])):
+            if j in s:
+                a[i].append(x[i][j])
+    for i in range(len(a)):
+        print(a[i])
+
+for i in range(len(list1)):
+    print(list1[i])
+print('--------------')
+f(list1)
+print('==============')
+for i in range(len(list2)):
+    print(list2[i])
+print('---------------')
+f(list2)
