@@ -1,0 +1,91 @@
+O = [2, 3, 4, 9]
+X = [6, 7, 8]
+
+results = []
+
+
+def accuracy(x,y):
+    average_ = (x+y)/2
+    count_O = 0
+    count_X = 0
+
+    for i in range(len(O)):
+        if average_ > O[i]:
+            count_O += 1
+
+    for i in range(len(X)):
+        if average_ < X[i]:
+            count_X += 1
+    acurasy1 = (count_X + count_O)/(len(O) + len(X))
+
+    count_O = 0
+    count_X = 0
+
+    for i in range(len(O)):
+        if average_ < O[i]:
+            count_O += 1
+
+    for i in range(len(X)):
+        if average_ > X[i]:
+            count_X += 1
+    acurasy2 = (count_X + count_O)/(len(O) + len(X))
+
+    if acurasy1 > acurasy2:
+        acurasy = acurasy1
+
+    elif acurasy2 > acurasy1:
+        acurasy = acurasy2
+
+    else:
+        acurasy = acurasy1
+
+
+    return acurasy, average_
+minimum = 0
+maximum = 0
+
+obshak = O + X
+obshak.sort()
+
+if min(O) < min(X):
+    minimum = min(O)
+elif min(X) < min(O):
+    minimum = min(X)
+
+
+if max(O) > max(X):
+    maximum = max(O)
+elif max(O) < max(X):
+    maximum = max(X)
+
+
+results.append(accuracy(minimum, minimum - 2))
+results.append(accuracy(maximum, maximum + 2))
+
+def kakoy_massive(x):
+    if x in X:
+        return X
+    else:
+        return O
+for i in range(len(obshak)-1):
+    if kakoy_massive(obshak[i]) != kakoy_massive((obshak[i+1])):
+        results.append(accuracy(obshak[i],obshak[i+1]))
+
+
+results_max = results[0][0]
+nubmer_results = 0
+for i in range(len(results)):
+    if results_max < results[i][0]:
+        results_max = results[i][0]
+for i in range(len(results)):
+    if results_max == results[i][0]:
+        number_results = results[i][1]
+if max(O) < min(X) or max(X) < min(O):
+    print('линейно разделимы')
+else:
+    print('линейно не разделимы')
+print(results)
+print('------')
+print(results_max)
+print('-----')
+print(number_results)
