@@ -47,20 +47,9 @@ maximum = 0
 obshak = O + X
 obshak.sort()
 
-if min(O) < min(X):
-    minimum = min(O)
-elif min(X) < min(O):
-    minimum = min(X)
 
-
-if max(O) > max(X):
-    maximum = max(O)
-elif max(O) < max(X):
-    maximum = max(X)
-
-
-results.append(accuracy(minimum, minimum - 2))
-results.append(accuracy(maximum, maximum + 2))
+results.append(accuracy(obshak[0], obshak[0] - 2))
+results.append(accuracy(obshak[len(obshak)-1], obshak[len(obshak)-1] + 2))
 
 def kakoy_massive(x):
     if x in X:
