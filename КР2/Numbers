@@ -1,0 +1,6 @@
+from random import *
+seed(3114)
+task1 = randint(1 , 33)
+task1 = randint(1 , 28)
+task1 = randint(1 , 6)
+print(task1, task2 , task3)
