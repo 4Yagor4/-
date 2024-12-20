@@ -1,0 +1,30 @@
+#9 (лаб5) Даны матрицы А размером 6 × 5 и С размером 7 × 4. Объединить массивы, 
+сформированные из сумм положительных элементов столб-цов матриц А и С. 
+Суммирование положительных элементов столбцов с получением результата в 
+виде массива осуществить в методе.'''
+
+from random import randint
+from numpy import *
+def sum_positive_columns(matrix):
+    transposed_matrix = list(map(list, zip(*matrix)))
+    column_sums = [sum(elem for elem in column if elem > 0) for column in transposed_matrix]
+    return column_sums
+
+# Матрица А размером 6 × 5
+A = [[randint(-50, 50) for _ in range(5)] for _ in range(6)]
+print("Матрица А:")
+print(array(A))
+
+# Матрица С размером 7 × 4
+C = [[randint(-50, 50) for _ in range(4)] for _ in range(7)]
+print("\nМатрица С:")
+print(array(C))
+
+A_column_sums = sum_positive_columns(A)
+C_column_sums = sum_positive_columns(C)
+
+result = A_column_sums + C_column_sums
+
+print("\nСуммы положительных элементов столбцов матрицы А:", A_column_sums)
+print("Суммы положительных элементов столбцов матрицы С:", C_column_sums)
+print("Объединенный массив сумм:", result)
