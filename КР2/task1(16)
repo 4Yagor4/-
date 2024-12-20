@@ -1,0 +1,17 @@
+#16(лаб4) В каждой строке матрицы А размером n*t максимальный элемент поместить в конец строки, сохранив порядок остальных элементов. 
+
+from random import *
+Matrix = [[ randint(-5,5)for _ in range(4)]for _ in range(3)]
+print('Исходная матрица')
+for row in Matrix:
+    print(row)
+result = []
+for row in Matrix:
+    max_value = max(row)
+    max_index = row.index(max_value)
+    new_row = row[:max_index] + row[max_index + 1:] + [max_value]
+    result.append(new_row)
+print('------------------------')
+print('Переделанная матрица')
+for row in result:
+    print(row)
