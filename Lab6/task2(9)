@@ -1,0 +1,67 @@
+#9 Результаты соревнований фигуристов по одному из видов многоборья представлены оценками 7 судей в баллах (от 0,0 до 6,0). По результатам оценок судьи определяется место каждого участника у этого судьи. Места участников определяются далее по сумме мест, которые каждый участник занял у всех судей. Составить программу, определяющую по исходной таблице оценок фамилии и сумму мест участников в порядке занятых ими мест.
+
+
+from audioop import reverse
+from random import uniform
+
+
+class results():
+    def __init__(self, name, grade1, grade2, grade3, grade4, grade5, grade6, grade7):
+        self.name = name
+        self.grade1 = grade1
+        self.grade2 = grade2
+        self.grade3 = grade3
+        self.grade4 = grade4
+        self.grade5 = grade5
+        self.grade6 = grade6
+        self.grade7 = grade7
+    def xyu(self, x):
+        a = [self.grade1, self.grade2, self.grade3, self.grade4, self.grade5, self.grade6, self.grade7]
+        return f'{a[x]}'
+
+    def output(self):
+        return f'{self.name} {self.grade1} {self.grade2} {self.grade3} {self.grade4} {self.grade5} {self.grade6} {self.grade7}'
+
+sportsmens = [
+    results('Бурдыко', f'{uniform(0.0, 6.0):.1f}', f'{uniform(0.0, 6.0):.1f}', f'{uniform(0.0, 6.0):.1f}',f'{uniform(0.0, 6.0):.1f}', f'{uniform(0.0, 6.0):.1f}', f'{uniform(0.0, 6.0):.1f}',f'{uniform(0.0, 6.0):.1f}'),
+     results('Улянюк', f'{uniform(0.0, 6.0):.1f}', f'{uniform(0.0, 6.0):.1f}', f'{uniform(0.0, 6.0):.1f}',f'{uniform(0.0, 6.0):.1f}', f'{uniform(0.0, 6.0):.1f}', f'{uniform(0.0, 6.0):.1f}',f'{uniform(0.0, 6.0):.1f}'),
+    results('Загидуллин', f'{uniform(0.0, 6.0):.1f}', f'{uniform(0.0, 6.0):.1f}', f'{uniform(0.0, 6.0):.1f}',f'{uniform(0.0, 6.0):.1f}', f'{uniform(0.0, 6.0):.1f}', f'{uniform(0.0, 6.0):.1f}',f'{uniform(0.0, 6.0):.1f}'),
+    results('Мерзляков', f'{uniform(0.0, 6.0):.1f}', f'{uniform(0.0, 6.0):.1f}', f'{uniform(0.0, 6.0):.1f}',f'{uniform(0.0, 6.0):.1f}', f'{uniform(0.0, 6.0):.1f}', f'{uniform(0.0, 6.0):.1f}',f'{uniform(0.0, 6.0):.1f}'),
+    results('Ватагин', f'{uniform(0.0, 6.0):.1f}', f'{uniform(0.0, 6.0):.1f}', f'{uniform(0.0, 6.0):.1f}',f'{uniform(0.0, 6.0):.1f}', f'{uniform(0.0, 6.0):.1f}', f'{uniform(0.0, 6.0):.1f}',f'{uniform(0.0, 6.0):.1f}'),
+    results('Бонадыков', f'{uniform(0.0, 6.0):.1f}', f'{uniform(0.0, 6.0):.1f}', f'{uniform(0.0, 6.0):.1f}',f'{uniform(0.0, 6.0):.1f}', f'{uniform(0.0, 6.0):.1f}', f'{uniform(0.0, 6.0):.1f}',f'{uniform(0.0, 6.0):.1f}'),
+    results('Астахов', f'{uniform(0.0, 6.0):.1f}', f'{uniform(0.0, 6.0):.1f}', f'{uniform(0.0, 6.0):.1f}',f'{uniform(0.0, 6.0):.1f}', f'{uniform(0.0, 6.0):.1f}', f'{uniform(0.0, 6.0):.1f}',f'{uniform(0.0, 6.0):.1f}'),
+
+                                                            ]
+
+ref = [[] for _ in range(7)]
+for i in range(7):
+    ref[i] += [[results.xyu(sportsmens[j],i), sportsmens[j].name] for j in range(len(sportsmens))]
+    ref[i].sort(reverse=True)
+
+res_ref = [[] for _ in range(7)]
+
+for i in range(7):
+    res_ref[i] += [[j + 1, ref[i][j][1]] for j in range(len(ref[i]))]
+res_sport = [[] for i in range(len(sportsmens))]
+place = [[] for i in range(len(sportsmens))]
+
+for i in range(len(res_sport)):
+    cnt = 0
+    for j in range(len(res_ref)):
+        for k in range(len(res_ref[j])):
+            if res_ref[j][k][1] == sportsmens[i].name:
+                cnt += res_ref[j][k][0]
+                place[i] += [res_ref[j][k][0]]
+    res_sport[i] = [cnt, sportsmens[i].name]
+res_sport.sort()
+
+
+print(f'{'Фамилия':<10} | {'1-й Судья':<10} | {'2-й Судья':<10} | {'3-й Судья':<10} | {'4-й Судья':<10} | {'5-й Судья':<10} | {'6-й Судья':<10} | {'7-й Судья':<10} |')
+print('-'*103)
+for i in range(len(sportsmens)):
+        print(f'{sportsmens[i].name:<10} | {place[i][0]:^10} | {place[i][1]:^10} | {place[i][2]:^10} | {place[i][3]:^10} | {place[i][4]:^10} | {place[i][5]:^10} | {place[i][6]:^10} |')
+print('='*103)
+print(f'')
+for i in range(len(res_sport)):
+    print(f'Cпортсмен {res_sport[i][1]} занял {i+1} место')
+print()
