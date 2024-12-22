@@ -1,0 +1,43 @@
+#1 Результаты соревнований по прыжкам в длину определяются по сумме двух попыток. В протоколе для каждого участника указываются: фамилия, общество, результаты первой и второй попыток. Вывести протокол в виде таблицы с заголовком в порядке занятых мест. 
+
+
+class sportiks:
+    def __init__(self, surname, society, jump1, jump2):
+        self.surname = surname
+        self.society = society
+        self.jump1 = jump1
+        self.jump2 = jump2
+        self.total_jump = jump1 + jump2
+
+    def __str__(self):
+        return f"{self.surname} | {self.society} | {self.jump1} | {self.jump2} | {self.total_jump}"
+
+
+class LongJumpCompetition:
+    def __init__(self):
+        self.sportsmens = []
+
+    def add_sportsmen(self, surname, society, jump1, jump2):
+        sportsmens = sportiks(surname, society, jump1, jump2)
+        self.sportsmens.append(sportsmens)
+
+    def display_results(self):
+        sorted_sportsmens = sorted(self.sportsmens, key=lambda p: p.total_jump, reverse=True)
+
+        print(f"{'Фамилия':^20} {'Общество':<20} {'1-я попытка':<15} {'2-я попытка':<15} {'Сумма':<10}")
+        print("=" * 80)
+
+        for sportsmens in sorted_sportsmens:
+            print(
+                f"{sportsmens.surname:<20} {sportsmens.society:<20} {sportsmens.jump1:<15} {sportsmens.jump2:<15} {sportsmens.total_jump:<10}")
+
+
+if __name__ == "__main__":
+    competition = LongJumpCompetition()
+
+    competition.add_sportsmen("Иванов", "ЦСКА", 9.5, 8.0)
+    competition.add_sportsmen("Петров", "Динамо", 6.8, 7.5)
+    competition.add_sportsmen("Сидоров", "Локомотив", 7.0, 7.2)
+    competition.add_sportsmen("Кузнецов", "Металлург Липецк", 8.0, 8.5)
+
+    competition.display_results()
