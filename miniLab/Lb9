@@ -1,0 +1,19 @@
+#8  ﻿﻿Поменять местами максимальный элемент массива и минимальный элемент части массива, расположенной после максималь-ного.
+
+from ntpath import split
+
+from msvcrt import open_osfhandle
+with open('Информатика.txt') as f:
+    n = f. readline()
+    b = [int(x) for x in n.split(',')]
+print(b)
+
+max_index = b.index(max(b))
+if max_index + 1 < len(b):
+    min_index = max_index + 1 + b[max_index + 1:].index(min(b[max_index + 1:]))
+    b[max_index], b[min_index] = b[min_index], b[max_index]
+
+print(b)
+
+
+
