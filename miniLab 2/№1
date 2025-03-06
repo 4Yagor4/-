@@ -1,0 +1,14 @@
+import matplotlib.pyplot as plt
+import numpy as np
+a = float(input ('Введите а:'))
+b = float (input ('Введите b:'))
+c = float(input (' Введите с:'))
+x = np. linspace(-100, 100, 100)
+
+Y = a*x**2 + b*x + c
+plt. title( 'Прафик параболлы') # заполовок
+plt.xlabel('x')# ось абсцисс
+plt. ylabel('y')# ось ординат
+plt.grid() # включение отображение сетки 1
+plt. plot(  x, Y) #
+plt. show()
