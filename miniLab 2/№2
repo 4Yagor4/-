@@ -1,0 +1,10 @@
+import matplotlib.pyplot as plt
+with open('графики.txt') as f:
+    n1 = f.readline()
+    x = [int(x) for x in n1.split(' ')]
+    n2 = f.readline()
+    y = [float(x) for x in n2.split(' ')]
+    print(x, y)
+    plt.scatter(x, y)
+    plt.plot(x, y)
+    plt.show()
