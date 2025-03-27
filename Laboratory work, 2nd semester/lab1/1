@@ -1,0 +1,83 @@
+import random
+import numpy as np
+import matplotlib.pyplot as plt
+from collections import Counter
+
+
+def create_random_points(x_range, y_range, num_points, class_label):
+    points = [[random.uniform(x_range[0], x_range[1]), random.uniform(y_range[0], y_range[1])] for _ in
+              range(num_points)]
+    labels = [class_label] * num_points
+    return points, labels
+
+
+def split_dataset(features, labels, train_ratio=0.8):
+    combined = list(zip(features, labels))
+    random.shuffle(combined)
+    split_index = int(len(combined) * train_ratio)
+    train_set, test_set = combined[:split_index], combined[split_index:]
+    train_features, train_labels = zip(*train_set)
+    test_features, test_labels = zip(*test_set)
+    return list(train_features), list(test_features), list(train_labels), list(test_labels)
+
+
+def calculate_distance(point_a, point_b):
+    return np.sqrt(np.sum((np.array(point_a) - np.array(point_b)) ** 2))
+
+
+def predict_labels(train_features, train_labels, test_features, neighbors=3):
+    predictions = []
+    for test_point in test_features:
+        distances = [(calculate_distance(test_point, train_point), label) for train_point, label in
+                     zip(train_features, train_labels)]
+        distances.sort(key=lambda x: x[0])
+        nearest_labels = [label for _, label in distances[:neighbors]]
+        most_frequent = Counter(nearest_labels).most_common(1)[0][0]
+        predictions.append(most_frequent)
+    return predictions
+
+
+def evaluate_performance(true_labels, predicted_labels):
+    correct = sum(1 for true, pred in zip(true_labels, predicted_labels) if true == pred)
+    return correct / len(true_labels)
+
+
+def plot_results(train_features, train_labels, test_features, test_labels, predictions):
+    plt.figure(figsize=(8, 6))
+
+    for point, label in zip(train_features, train_labels):
+        plt.scatter(*point, c='blue', marker='o' if label == 0 else 'x',
+                    label='Training Data' if 'Training Data' not in plt.gca().get_legend_handles_labels()[1] else "")
+
+    for point, true_label, pred_label in zip(test_features, test_labels, predictions):
+        color = 'green' if true_label == pred_label else 'red'
+        marker = 'o' if true_label == 0 else 'x'
+        plt.scatter(*point, c=color, marker=marker)
+
+    plt.legend()
+    plt.show()
+
+
+# Define ranges and number of points
+range1 = (1, 8)
+range2 = (3, 10)
+num_points = 50
+
+# Generate data
+points1, labels1 = create_random_points(range1, range1, num_points, 0)
+points2, labels2 = create_random_points(range2, range2, num_points, 1)
+all_points = points1 + points2
+all_labels = labels1 + labels2
+
+# Split data
+train_features, test_features, train_labels, test_labels = split_dataset(all_points, all_labels, train_ratio=0.8)
+
+# Predict labels
+predicted_labels = predict_labels(train_features, train_labels, test_features, neighbors=3)
+
+# Calculate accuracy
+accuracy = evaluate_performance(test_labels, predicted_labels)
+print(f"Model Accuracy: {accuracy:.2f}")
+
+# Visualize results
+plot_results(train_features, train_labels, test_features, test_labels, predicted_labels)
