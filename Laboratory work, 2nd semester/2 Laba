@@ -1,0 +1,68 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.widgets import Slider
+import random
+
+
+def generate_points(num_clusters=3, points_per_cluster=30):
+    centers = [(random.randint(-20, 20), random.randint(-20, 20)) for _ in range(num_clusters)]
+    radii = [random.uniform(1, 9) for _ in range(num_clusters)]
+
+    x, y = [], []
+
+    for i in range(num_clusters):
+        for _ in range(points_per_cluster):
+            angle = random.uniform(0, 2 * np.pi)
+            radius = random.uniform(0, radii[i])
+            cx, cy = centers[i]
+            x.append(cx + radius * np.cos(angle))
+            y.append(cy + radius * np.sin(angle))
+
+    return x, y
+
+# Метод k-средних
+def k_means(x, y, k=3, max_iters=100):
+    points = np.array(list(zip(x, y)))
+    
+    centroids = points[np.random.choice(len(points), k, replace=False)]
+    all_labels = []
+    all_centroids = []
+
+    for iteration in range(max_iters):
+        
+        distances = np.linalg.norm(points[:, np.newaxis] - centroids, axis=2)
+        labels = np.argmin(distances, axis=1)
+        all_labels.append(labels.copy())
+        all_centroids.append(centroids.copy())
+
+       
+        new_centroids = np.array([points[labels == i].mean(axis=0) if np.any(labels == i) else centroids[i] for i in range(k)])
+        centroids = new_centroids
+
+    return all_labels, all_centroids, points
+
+
+def visualize_k_means(all_labels, all_centroids, points, k=3):
+    fig, ax = plt.subplots()
+    plt.subplots_adjust(bottom=0.25)
+    scatter = ax.scatter(points[:, 0], points[:, 1], c=all_labels[0], cmap='tab10', s=40)
+    centers_plot, = ax.plot(all_centroids[0][:, 0], all_centroids[0][:, 1], 'kx', markersize=10, mew=3)
+
+    def update(epoch):
+        epoch = int(epoch)
+        labels = all_labels[epoch]
+        centroids = all_centroids[epoch]
+        scatter.set_offsets(points)
+        scatter.set_array(np.array(labels))
+        centers_plot.set_data(centroids[:, 0], centroids[:, 1])
+        fig.canvas.draw_idle()
+
+    ax_slider = plt.axes([0.2, 0.1, 0.65, 0.03])
+    slider = Slider(ax_slider, 'Эпоха', 0, len(all_labels) - 1, valinit=0, valstep=1)
+    slider.on_changed(update)
+    update(0)
+    plt.show()
+
+x, y = generate_points()
+all_labels, all_centroids, points = k_means(x, y, k=3)
+visualize_k_means(all_labels, all_centroids, points)
