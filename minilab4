@@ -3,14 +3,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 
-# Загрузка данных
-data = pd.read_csv('C:/Users/USER/PycharmProjects/pythonProject5/датасет-1.csv', sep=';')  # Путь к файлу
-data['price'] = data['price'].str.replace(',', '.').astype(float)
-data['area'] = data['area'].astype(float)
+housing_data = pd.read_csv('C:/Users/USER/PycharmProjects/pythonProject5/датасет-1.csv', sep=';')  # Путь к файлу
+housing_data['price'] = housing_data['price'].str.replace(',', '.').astype(float)
+housing_data['area'] = housing_data['area'].astype(float)
 
-# Визуализация исходных данных
 plt.figure(figsize=(10, 6))
-plt.scatter(data['area'], data['price'], color='crimson', label='Данные')
+plt.scatter(housing_data['area'], housing_data['price'], color='crimson', label='Исходные данные')
 plt.xlabel('Площадь (кв.м.)', fontsize=12)
 plt.ylabel('Стоимость (млн.руб)', fontsize=12)
 plt.title('Зависимость стоимости от площади', fontsize=14)
@@ -18,27 +16,25 @@ plt.grid(True, linestyle='--', alpha=0.7)
 plt.legend()
 plt.show()
 
-# Обучение модели линейной регрессии
-model = LinearRegression()
-model.fit(data[['area']], data['price'])
+regression_model = LinearRegression()
+regression_model.fit(housing_data[['area']], housing_data['price'])
 
-# Прогнозирование для конкретных значений
-area_38 = 38
-area_200 = 200
-prediction_38 = model.predict([[area_38]])[0]
-prediction_200 = model.predict([[area_200]])[0]
+small_apartment_size = 38
+large_apartment_size = 200
+predicted_price_small = regression_model.predict([[small_apartment_size]])[0]
+predicted_price_large = regression_model.predict([[large_apartment_size]])[0]
 
-print(f"Предсказанная цена квартиры {area_38} м²: {prediction_38:.2f} млн руб")
-print(f"Предсказанная цена квартиры {area_200} м²: {prediction_200:.2f} млн руб")
+print(f"Предсказанная цена квартиры {small_apartment_size} м²: {predicted_price_small:.2f} млн руб")
+print(f"Предсказанная цена квартиры {large_apartment_size} м²: {predicted_price_large:.2f} млн руб")
 
 # Параметры модели
-print(f"Коэффициент наклона (a): {model.coef_[0]:.4f}")
-print(f"Коэффициент сдвига (b): {model.intercept_:.4f}")
+print(f"Коэффициент наклона (a): {regression_model.coef_[0]:.4f}")
+print(f"Коэффициент сдвига (b): {regression_model.intercept_:.4f}")
 
-# Визуализация с линией регрессии
+
 plt.figure(figsize=(10, 6))
-plt.scatter(data['area'], data['price'], color='crimson', label='Данные')
-plt.plot(data['area'], model.predict(data[['area']]),
+plt.scatter(housing_data['area'], housing_data['price'], color='crimson', label='Исходные данные')
+plt.plot(housing_data['area'], regression_model.predict(housing_data[['area']]),
          color='navy', linewidth=2, label='Линия регрессии')
 plt.xlabel('Площадь (кв.м.)', fontsize=12)
 plt.ylabel('Стоимость (млн.руб)', fontsize=12)
@@ -47,20 +43,15 @@ plt.grid(True, linestyle='--', alpha=0.7)
 plt.legend()
 plt.show()
 
-# Загрузка данных для прогнозирования
-new_areas = pd.read_csv('C:/Users/USER/PycharmProjects/pythonProject5/prediction_price.csv')
 
-# Прогнозирование цен
-price_predictions = model.predict(new_areas)
+new_apartments = pd.read_csv('C:/Users/USER/PycharmProjects/pythonProject5/prediction_price.csv')
+price_predictions = regression_model.predict(new_apartments)
+new_apartments['predicted_price'] = price_predictions
 
-# Добавление прогнозируемых цен в DataFrame
-new_areas['predicted_price'] = price_predictions
 
-# Вывод результатов
 print("\nПрогнозируемые цены:")
-print(new_areas)
+print(new_apartments)
 
-# Сохранение результатов в Excel
-output_file = 'predicted_prices.xlsx'
-new_areas.to_excel(output_file, index=False)
-print(f"\nРезультаты сохранены в файл: {output_file}")  
+result_file = 'predicted_prices.xlsx'
+new_apartments.to_excel(result_file, index=False)
+print(f"\nРезультаты сохранены в файл: {result_file}")
