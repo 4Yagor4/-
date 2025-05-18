@@ -1,0 +1,82 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.widgets import Slider
+from random import uniform
+
+a_true = 2.0
+b_true = 1.5
+c_true = 1.0
+
+x_min, x_max = 0, 10
+points = 50
+x = np.linspace(x_min, x_max, points)
+y_true = a_true * np.sin(b_true * x) + c_true
+y = y_true + np.array([uniform(-0.5, 0.5) for _ in range(points)])
+a = 0.5
+b = 0.5
+c = 0.5
+
+learning_rate = 0.01
+epochs = 500
+
+a_history = [a]
+b_history = [b]
+c_history = [c]
+
+def get_da(x, y, a, b, c):
+    y_pred = a * np.sin(b * x) + c
+    return -2 * np.mean(np.sin(b * x) * (y - y_pred))
+
+
+def get_db(x, y, a, b, c):
+    y_pred = a * np.sin(b * x) + c
+    return -2 * a * np.mean(x * np.cos(b * x) * (y - y_pred))
+
+
+def get_dc(x, y, a, b, c):
+    y_pred = a * np.sin(b * x) + c
+    return -2 * np.mean(y - y_pred)
+
+for epoch in range(epochs):
+    da = get_da(x, y, a, b, c)
+    db = get_db(x, y, a, b, c)
+    dc = get_dc(x, y, a, b, c)
+
+    a -= learning_rate * da
+    b -= learning_rate * db
+    c -= learning_rate * dc
+
+    a_history.append(a)
+    b_history.append(b)
+    c_history.append(c)
+
+fig, ax = plt.subplots(figsize=(10, 6))
+plt.subplots_adjust(bottom=0.2)
+
+scatter = ax.scatter(x, y, color='blue', label='Исходные данные')
+line, = ax.plot(x, a * np.sin(b * x) + c, 'r-', label='Модель')
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title('Гармоническая регрессия: y = a*sin(bx) + c')
+ax.legend()
+ax.grid(True)
+
+ax_slider = plt.axes([0.2, 0.1, 0.6, 0.03])
+slider = Slider(ax_slider, 'Эпоха', 0, epochs, valinit=epochs, valstep=1)
+
+def update(val):
+    epoch = int(slider.val)
+    a = a_history[epoch]
+    b = b_history[epoch]
+    c = c_history[epoch]
+
+    line.set_ydata(a * np.sin(b * x) + c)
+    fig.canvas.draw_idle()
+
+
+slider.on_changed(update)
+
+plt.show()
+
+print(f"Истинные параметры: a={a_true}, b={b_true}, c={c_true}")
+print(f"Найденные параметры: a={a_history[-1]:.4f}, b={b_history[-1]:.4f}, c={c_history[-1]:.4f}")
