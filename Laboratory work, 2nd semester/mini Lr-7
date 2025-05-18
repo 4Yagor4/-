@@ -1,0 +1,114 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn import datasets
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.neural_network import MLPClassifier
+from sklearn.metrics import accuracy_score
+
+n_samples = 500
+seed = 30
+
+noisy_circles = datasets.make_circles(n_samples=n_samples, factor=0.5, noise=0.05, random_state=seed)
+x1, y1 = noisy_circles
+
+noisy_moons = datasets.make_moons(n_samples=n_samples, noise=0.05, random_state=seed)
+x2, y2 = noisy_moons
+
+cluster_std = [1.0, 0.5]
+varied = datasets.make_blobs(n_samples=n_samples, cluster_std=cluster_std, random_state=seed, centers=2)
+x3, y3 = varied
+
+random_state = 170
+x, y = datasets.make_blobs(n_samples=n_samples, random_state=random_state, centers=2)
+transformation = [[0.6, -0.6], [-0.4, 0.8]]
+x_aniso = np.dot(x, transformation)
+aniso = (x_aniso, y)
+x4, y4 = aniso
+
+blobs = datasets.make_blobs(n_samples=n_samples, random_state=seed, centers=2)
+x5, y5 = blobs
+
+datasets_list = [
+    (x1, y1, "Две окружности"),
+    (x2, y2, "Две параболы"),
+    (x3, y3, "Хаотичное распределение"),
+    (x4, y4, "Точки вокруг прямых"),
+    (x5, y5, "Слабо пересекающиеся области")
+]
+
+plt.figure(figsize=(18, 25))
+plt.subplots_adjust(hspace=0.4, wspace=0.2)
+
+for i, (x, y, title) in enumerate(datasets_list):
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+
+    temp_x = np.linspace(x[:, 0].min() - 1, x[:, 0].max() + 1, 100)
+    temp_y = np.linspace(x[:, 1].min() - 1, x[:, 1].max() + 1, 100)
+    xx, yy = np.meshgrid(temp_x, temp_y)
+
+    model_knn = KNeighborsClassifier(n_neighbors=3)
+    model_knn.fit(x_train, y_train)
+    y_pred_knn = model_knn.predict(x_test)
+    accuracy_knn = accuracy_score(y_test, y_pred_knn)
+
+    Z_knn = model_knn.predict(np.c_[xx.ravel(), yy.ravel()])
+    Z_knn = Z_knn.reshape(xx.shape)
+
+    model_svm = SVC(kernel='rbf', C=1.0)
+    model_svm.fit(x_train, y_train)
+    y_pred_svm = model_svm.predict(x_test)
+    accuracy_svm = accuracy_score(y_test, y_pred_svm)
+
+    Z_svm = model_svm.predict(np.c_[xx.ravel(), yy.ravel()])
+    Z_svm = Z_svm.reshape(xx.shape)
+
+    model_mlp = MLPClassifier(hidden_layer_sizes=(64, 32),
+                              activation='relu',
+                              solver='adam',
+                              max_iter=1000,
+                              random_state=42)
+    model_mlp.fit(x_train, y_train)
+    y_pred_mlp = model_mlp.predict(x_test)
+    accuracy_mlp = accuracy_score(y_test, y_pred_mlp)
+
+    Z_mlp = model_mlp.predict(np.c_[xx.ravel(), yy.ravel()])
+    Z_mlp = Z_mlp.reshape(xx.shape)
+
+    markers = ['x', 'o']
+
+    plt.subplot(5, 3, i * 3 + 1)
+    plt.contourf(xx, yy, Z_knn, alpha=0.3, cmap='bwr')
+    for j in range(len(x_train)):
+        plt.scatter(x_train[j, 0], x_train[j, 1], marker=markers[y_train[j]], c='b', alpha=0.5)
+    for j in range(len(x_test)):
+        m = 'r'
+        if y_test[j] == y_pred_knn[j]:
+            m = 'g'
+        plt.scatter(x_test[j, 0], x_test[j, 1], marker=markers[y_test[j]], c=m)
+    plt.title(f"{title}\nKNN (Accuracy: {accuracy_knn:.2f})")
+
+    plt.subplot(5, 3, i * 3 + 2)
+    plt.contourf(xx, yy, Z_svm, alpha=0.3, cmap='bwr')
+    for j in range(len(x_train)):
+        plt.scatter(x_train[j, 0], x_train[j, 1], marker=markers[y_train[j]], c='b', alpha=0.5)
+    for j in range(len(x_test)):
+        m = 'r'
+        if y_test[j] == y_pred_svm[j]:
+            m = 'g'
+        plt.scatter(x_test[j, 0], x_test[j, 1], marker=markers[y_test[j]], c=m)
+    plt.title(f"{title}\nSVM (Accuracy: {accuracy_svm:.2f})")
+
+    plt.subplot(5, 3, i * 3 + 3)
+    plt.contourf(xx, yy, Z_mlp, alpha=0.3, cmap='bwr')
+    for j in range(len(x_train)):
+        plt.scatter(x_train[j, 0], x_train[j, 1], marker=markers[y_train[j]], c='b', alpha=0.5)
+    for j in range(len(x_test)):
+        m = 'r'
+        if y_test[j] == y_pred_mlp[j]:
+            m = 'g'
+        plt.scatter(x_test[j, 0], x_test[j, 1], marker=markers[y_test[j]], c=m)
+    plt.title(f"{title}\nMLP (Accuracy: {accuracy_mlp:.2f})")
+
+plt.show()
