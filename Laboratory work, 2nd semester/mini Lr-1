@@ -1,0 +1,16 @@
+#4. Назовем сложностью предложения сумму количества слов и знаков препинания. Определить сложность заданного предложения.
+
+
+import string
+
+def razdel(sentence):
+    words = sentence.strip().split()
+    word_count = len(words)
+    punctuation_count = sum(1 for char in sentence if char in string.punctuation)
+    return word_count + punctuation_count
+
+
+# Пример использования
+sentence = "О чем шумите вы, народные витии? Зачем анафемой грозите вы России? Что возмутило вас? волнение Литвы?Оставьте: это спор славян между собою,Домашний, старый спор, уж взвешенный судьбою,Вопрос, которого не разрешите вы."
+complexity = razdel(sentence)
+print(f"Сложность предложения: {complexity}")
