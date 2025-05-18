@@ -1,0 +1,89 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+def gradientDescend(func=lambda x: x ** 2, diffFunc=lambda x: 2 * x, x0=3, speed=0.01, epochs=100):
+
+    xList = []
+    yList = []
+    x = x0
+
+    for _ in range(epochs):
+        xList.append(x)
+        yList.append(func(x))
+        x = x - speed * diffFunc(x)
+
+    return xList, yList
+
+
+
+def f(x):
+    return np.exp(-x / 5) * np.sin(x) + x ** 2 / 20
+
+
+def df(x):
+    return -1 / 5 * np.exp(-x / 5) * np.sin(x) + np.exp(-x / 5) * np.cos(x) + x / 10
+
+
+
+x0 = 2.0
+speed = 0.1
+epochs = 50
+
+
+x_vals, y_vals = gradientDescend(func=f, diffFunc=df, x0=x0, speed=speed, epochs=epochs)
+
+
+x = np.linspace(-2, 5, 400)
+y = f(x)
+
+plt.figure(figsize=(10, 6))
+plt.plot(x, y, label='f(x) = e^(-x/5) * sin(x) + x²/20')
+plt.scatter(x_vals, y_vals, color='red', label='Точки градиентного спуска')
+plt.xlabel('x')
+plt.ylabel('f(x)')
+plt.title('Градиентный спуск для функции f(x) = e^(-x/5) * sin(x) + x²/20')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+
+print("Результаты градиентного спуска:")
+print(f"Начальное значение x: {x0}")
+print(f"Конечное значение x: {x_vals[-1]:.4f}")
+print(f"Значение функции в конечной точке: {y_vals[-1]:.4f}")
+print(f"Количество итераций: {epochs}")
+
+
+
+def find_critical_speed(func, diffFunc, x0, epochs=50):
+    """
+    Находит граничное значение speed методом бинарного поиска
+    """
+    low = 0.01
+    high = 1.0
+    tolerance = 0.001
+
+    for _ in range(20):
+        mid = (low + high) / 2
+        x_vals, _ = gradientDescend(func, diffFunc, x0, mid, epochs)
+
+
+        if abs(x_vals[-1]) < 10 and not np.isnan(x_vals[-1]):
+            low = mid
+        else:
+            high = mid
+
+    return (low + high) / 2
+
+
+
+critical_speed = find_critical_speed(f, df, x0=x0)
+print(f"\nГраничное значение speed: {critical_speed:.4f}")
+
+
+print("\nПроверка сходимости при разных speed:")
+for test_speed in [critical_speed * 0.9, critical_speed, critical_speed * 1.1]:
+    test_x, _ = gradientDescend(f, df, x0, test_speed, epochs)
+    result = "сходится" if abs(test_x[-1]) < 10 else "расходится"
+    print(f"speed = {test_speed:.4f} - {result}")
