@@ -1,105 +1,91 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.cluster import KMeans, SpectralClustering, OPTICS
-from sklearn.datasets import make_blobs, make_moons, make_circles, make_classification
+from sklearn.cluster import KMeans, DBSCAN, AgglomerativeClustering
+from sklearn.datasets import make_blobs, make_moons, make_circles
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import silhouette_score
 
 np.random.seed(42)
-selected_algorithms = np.random.choice(range(1, 12), size=3, replace=False)
-print(f"Выбранные алгоритмы (номера): {selected_algorithms}")
+algorithms = np.random.choice(range(1, 12), size=3, replace=False)
+print(f"Выбранные алгоритмы (номера): {algorithms}")
 
-def generate_datasets():
-    n_samples = 500
-    random_state = 42
-    X_varied, _ = make_blobs(n_samples=n_samples, centers=3,
-                             cluster_std=[1.0, 2.5, 0.5],
-                             random_state=random_state)
-    X_moons, _ = make_moons(n_samples=n_samples, noise=0.05,
-                            random_state=random_state)
-    X_circles, _ = make_circles(n_samples=n_samples, factor=0.5,
-                                noise=0.05, random_state=random_state)
+selected_algorithms = [
+    ('KMeans', KMeans(n_clusters=3)),
+    ('DBSCAN', DBSCAN(eps=0.3, min_samples=10)),
+    ('Agglomerative', AgglomerativeClustering(n_clusters=3))
+]
 
-    X_aniso, _ = make_blobs(n_samples=n_samples, centers=3,
-                            random_state=random_state)
+def generate_blobs(n_samples=300):
+    return make_blobs(n_samples=n_samples, centers=3, cluster_std=0.8, random_state=42)
+
+
+def generate_moons(n_samples=300):
+    return make_moons(n_samples=n_samples, noise=0.05, random_state=42)
+
+
+def generate_circles(n_samples=300):
+    return make_circles(n_samples=n_samples, factor=0.5, noise=0.05, random_state=42)
+
+
+def generate_anisotropic(n_samples=300):
+    X, y = make_blobs(n_samples=n_samples, centers=3, random_state=42)
     transformation = [[0.6, -0.6], [-0.4, 0.8]]
-    X_aniso = np.dot(X_aniso, transformation)
-    X_no_structure = np.random.rand(n_samples, 2)
-    X_uneven, _ = make_blobs(n_samples=n_samples, centers=3,
-                             cluster_std=1.0, random_state=random_state)
-    X_uneven = np.vstack([X_uneven[:50], X_uneven[200:250], X_uneven[400:]])
-
-    datasets = [
-        ("Кластеры с разной дисперсией", X_varied),
-        ("Полумесяцы", X_moons),
-        ("Концентрические круги", X_circles),
-        ("Анизотропные данные", X_aniso),
-        ("Без структуры", X_no_structure),
-        ("Разный размер кластеров", X_uneven)
-    ]
-
-    return datasets
-
-def kmeans_clustering(X, n_clusters=3):
-    kmeans = KMeans(n_clusters=n_clusters, random_state=42)
-    labels = kmeans.fit_predict(X)
-    return labels
-
-def spectral_clustering(X, n_clusters=3):
-    spectral = SpectralClustering(n_clusters=n_clusters,
-                                  affinity='nearest_neighbors',
-                                  random_state=42)
-    labels = spectral.fit_predict(X)
-    return labels
-
-def optics_clustering(X):
-    optics = OPTICS(min_samples=10, xi=0.05, min_cluster_size=0.1)
-    labels = optics.fit_predict(X)
-    return labels
-
-def plot_clusters(datasets, algorithms):
-    plt.figure(figsize=(20, 15))
-    plt.subplots_adjust(left=0.02, right=0.98, bottom=0.05, top=0.9,
-                        hspace=0.3, wspace=0.2)
-
-    for i, (dataset_name, X) in enumerate(datasets):
-        X = StandardScaler().fit_transform(X)
+    X = np.dot(X, transformation)
+    return X, y
 
 
-        n_clusters = 3 if "кру" not in dataset_name.lower() else 2
+def generate_varied_variances(n_samples=300):
+    X, y = make_blobs(n_samples=n_samples,
+                      centers=3,
+                      cluster_std=[1.0, 2.5, 0.5],
+                      random_state=42)
+    return X, y
 
-        for j, (algo_name, algo_func) in enumerate(algorithms.items()):
-            plt.subplot(len(datasets), len(algorithms), i * len(algorithms) + j + 1)
 
-            try:
-                if algo_name == "OPTICS":
-                    labels = algo_func(X)
-                else:
-                    labels = algo_func(X, n_clusters)
+def generate_no_structure(n_samples=300):
+    return np.random.rand(n_samples, 2), None
 
-                plt.scatter(X[:, 0], X[:, 1], c=labels, s=10, cmap='viridis')
-                if len(np.unique(labels)) > 1:
-                    silhouette = silhouette_score(X, labels)
-                    plt.title(f"{algo_name}\nSilhouette: {silhouette:.2f}")
-                else:
-                    plt.title(f"{algo_name}\n1 cluster")
 
-            except Exception as e:
-                plt.scatter(X[:, 0], X[:, 1], s=10)
-                plt.title(f"{algo_name}\nError: {str(e)}")
+def plot_clusters(X, y, algorithm_name, dataset_name, ax):
+    ax.scatter(X[:, 0], X[:, 1], c=y, s=10, cmap='viridis')
+    ax.set_title(f'{algorithm_name} - {dataset_name}')
+    ax.set_xticks([])
+    ax.set_yticks([])
 
-            if j == 0:
-                plt.ylabel(dataset_name)
+datasets = [
+    ('Blobs', generate_blobs()),
+    ('Moons', generate_moons()),
+    ('Circles', generate_circles()),
+    ('Anisotropic', generate_anisotropic()),
+    ('Varied Variances', generate_varied_variances()),
+    ('No Structure', generate_no_structure())
+]
 
-    plt.suptitle("Сравнение алгоритмов кластеризации на разных наборах данных", fontsize=16)
-    plt.show()
+plt.figure(figsize=(18, 12))
+plt.subplots_adjust(hspace=0.3, wspace=0.1)
 
-if __name__ == "__main__":
-    datasets = generate_datasets()
+for i, (dataset_name, (X, y_true)) in enumerate(datasets):
 
-    algorithms = {
-        "K-Means": kmeans_clustering,
-        "Spectral Clustering": spectral_clustering,
-        "OPTICS": optics_clustering
-    }
-    plot_clusters(datasets, algorithms)
+    X = StandardScaler().fit_transform(X)
+
+    for j, (algorithm_name, algorithm) in enumerate(selected_algorithms):
+        ax = plt.subplot(len(datasets), len(selected_algorithms),
+                         i * len(selected_algorithms) + j + 1)
+
+
+        if algorithm_name == 'DBSCAN' and dataset_name == 'No Structure':
+            algorithm.set_params(eps=0.5)
+
+        y_pred = algorithm.fit_predict(X)
+
+        plot_clusters(X, y_pred, algorithm_name, dataset_name, ax)
+
+plt.suptitle('Сравнение алгоритмов кластеризации на разных типах данных', y=0.99)
+plt.show()
+
+print("\nАнализ результатов:")
+print("1. KMeans хорошо работает с выпуклыми кластерами (Blobs, Varied Variances),")
+print("   но плохо справляется с невыпуклыми формами (Moons, Circles).")
+print("2. DBSCAN хорошо обнаруживает кластеры произвольной формы (Moons, Circles),")
+print("   но чувствителен к параметрам и плохо работает с разномасштабными кластерами.")
+print("3. AgglomerativeClustering показывает средние результаты на всех типах данных,")
+print("   но требует задания числа кластеров и также плохо работает с невыпуклыми формами.")
