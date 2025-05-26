@@ -1,0 +1,105 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans, SpectralClustering, OPTICS
+from sklearn.datasets import make_blobs, make_moons, make_circles, make_classification
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import silhouette_score
+
+np.random.seed(42)
+selected_algorithms = np.random.choice(range(1, 12), size=3, replace=False)
+print(f"Выбранные алгоритмы (номера): {selected_algorithms}")
+
+def generate_datasets():
+    n_samples = 500
+    random_state = 42
+    X_varied, _ = make_blobs(n_samples=n_samples, centers=3,
+                             cluster_std=[1.0, 2.5, 0.5],
+                             random_state=random_state)
+    X_moons, _ = make_moons(n_samples=n_samples, noise=0.05,
+                            random_state=random_state)
+    X_circles, _ = make_circles(n_samples=n_samples, factor=0.5,
+                                noise=0.05, random_state=random_state)
+
+    X_aniso, _ = make_blobs(n_samples=n_samples, centers=3,
+                            random_state=random_state)
+    transformation = [[0.6, -0.6], [-0.4, 0.8]]
+    X_aniso = np.dot(X_aniso, transformation)
+    X_no_structure = np.random.rand(n_samples, 2)
+    X_uneven, _ = make_blobs(n_samples=n_samples, centers=3,
+                             cluster_std=1.0, random_state=random_state)
+    X_uneven = np.vstack([X_uneven[:50], X_uneven[200:250], X_uneven[400:]])
+
+    datasets = [
+        ("Кластеры с разной дисперсией", X_varied),
+        ("Полумесяцы", X_moons),
+        ("Концентрические круги", X_circles),
+        ("Анизотропные данные", X_aniso),
+        ("Без структуры", X_no_structure),
+        ("Разный размер кластеров", X_uneven)
+    ]
+
+    return datasets
+
+def kmeans_clustering(X, n_clusters=3):
+    kmeans = KMeans(n_clusters=n_clusters, random_state=42)
+    labels = kmeans.fit_predict(X)
+    return labels
+
+def spectral_clustering(X, n_clusters=3):
+    spectral = SpectralClustering(n_clusters=n_clusters,
+                                  affinity='nearest_neighbors',
+                                  random_state=42)
+    labels = spectral.fit_predict(X)
+    return labels
+
+def optics_clustering(X):
+    optics = OPTICS(min_samples=10, xi=0.05, min_cluster_size=0.1)
+    labels = optics.fit_predict(X)
+    return labels
+
+def plot_clusters(datasets, algorithms):
+    plt.figure(figsize=(20, 15))
+    plt.subplots_adjust(left=0.02, right=0.98, bottom=0.05, top=0.9,
+                        hspace=0.3, wspace=0.2)
+
+    for i, (dataset_name, X) in enumerate(datasets):
+        X = StandardScaler().fit_transform(X)
+
+
+        n_clusters = 3 if "кру" not in dataset_name.lower() else 2
+
+        for j, (algo_name, algo_func) in enumerate(algorithms.items()):
+            plt.subplot(len(datasets), len(algorithms), i * len(algorithms) + j + 1)
+
+            try:
+                if algo_name == "OPTICS":
+                    labels = algo_func(X)
+                else:
+                    labels = algo_func(X, n_clusters)
+
+                plt.scatter(X[:, 0], X[:, 1], c=labels, s=10, cmap='viridis')
+                if len(np.unique(labels)) > 1:
+                    silhouette = silhouette_score(X, labels)
+                    plt.title(f"{algo_name}\nSilhouette: {silhouette:.2f}")
+                else:
+                    plt.title(f"{algo_name}\n1 cluster")
+
+            except Exception as e:
+                plt.scatter(X[:, 0], X[:, 1], s=10)
+                plt.title(f"{algo_name}\nError: {str(e)}")
+
+            if j == 0:
+                plt.ylabel(dataset_name)
+
+    plt.suptitle("Сравнение алгоритмов кластеризации на разных наборах данных", fontsize=16)
+    plt.show()
+
+if __name__ == "__main__":
+    datasets = generate_datasets()
+
+    algorithms = {
+        "K-Means": kmeans_clustering,
+        "Spectral Clustering": spectral_clustering,
+        "OPTICS": optics_clustering
+    }
+    plot_clusters(datasets, algorithms)
