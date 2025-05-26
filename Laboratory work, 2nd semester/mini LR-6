@@ -1,75 +1,73 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from typing import Callable, Tuple, List
 
 
-def gradientDescend(func=lambda x: x ** 2, diffFunc=lambda x: 2 * x, x0=3, speed=0.01, epochs=100):
+def f(x: float) -> float:
+    return x ** 3 - 2 * np.exp(-x) + 4 * np.cos(x)
 
+
+def df(x: float) -> float:
+    return 3 * x ** 2 + 2 * np.exp(-x) - 4 * np.sin(x)
+
+
+def gradientDescend(
+        func: Callable[[float], float] = lambda x: x ** 2,
+        diffFunc: Callable[[float], float] = lambda x: 2 * x,
+        x0: float = 2.0,
+        speed: float = 0.02,
+        epochs: int = 100
+) -> Tuple[List[float], List[float]]:
     xList = []
     yList = []
     x = x0
 
     for _ in range(epochs):
+        gradient = diffFunc(x)
+        x = x - speed * gradient
         xList.append(x)
         yList.append(func(x))
-        x = x - speed * diffFunc(x)
 
     return xList, yList
 
 
+def plot_results(
+        xList: List[float],
+        yList: List[float],
+        func: Callable[[float], float],
+        x_range: Tuple[float, float] = (-1, 3)
+) -> None:
+    x_vals = np.linspace(x_range[0], x_range[1], 400)
+    y_vals = func(x_vals)
 
-def f(x):
-    return np.exp(-x / 5) * np.sin(x) + x ** 2 / 20
+    plt.figure(figsize=(12, 6))
+    plt.plot(x_vals, y_vals, label='Функция f(x)', color='blue', linewidth=2)
+    plt.scatter(xList, yList, c='orange', s=50, label='Точки градиентного спуска', zorder=5)
+    plt.scatter(xList[-1], yList[-1], c='red', s=100, label='Финальная точка', marker='x', zorder=6)
 
-
-def df(x):
-    return -1 / 5 * np.exp(-x / 5) * np.sin(x) + np.exp(-x / 5) * np.cos(x) + x / 10
-
-
-
-x0 = 2.0
-speed = 0.1
-epochs = 50
-
-
-x_vals, y_vals = gradientDescend(func=f, diffFunc=df, x0=x0, speed=speed, epochs=epochs)
-
-
-x = np.linspace(-2, 5, 400)
-y = f(x)
-
-plt.figure(figsize=(10, 6))
-plt.plot(x, y, label='f(x) = e^(-x/5) * sin(x) + x²/20')
-plt.scatter(x_vals, y_vals, color='red', label='Точки градиентного спуска')
-plt.xlabel('x')
-plt.ylabel('f(x)')
-plt.title('Градиентный спуск для функции f(x) = e^(-x/5) * sin(x) + x²/20')
-plt.legend()
-plt.grid(True)
-plt.show()
+    plt.xlabel('x', fontsize=12)
+    plt.ylabel('f(x)', fontsize=12)
+    plt.title('Градиентный спуск для функции $x^3 - 2e^{-x} + 4\cos(x)$', fontsize=14)
+    plt.legend(fontsize=10, loc='upper right')
+    plt.grid(True, linestyle='--', alpha=0.5)
+    plt.show()
 
 
-print("Результаты градиентного спуска:")
-print(f"Начальное значение x: {x0}")
-print(f"Конечное значение x: {x_vals[-1]:.4f}")
-print(f"Значение функции в конечной точке: {y_vals[-1]:.4f}")
-print(f"Количество итераций: {epochs}")
+def find_critical_speed(
+        func: Callable[[float], float] = f,
+        diffFunc: Callable[[float], float] = df,
+        x0: float = 2.0,
+        max_speed: float = 1.0,
+        tol: float = 1e-6
+) -> float:
+    low = 0.0
+    high = max_speed
 
-
-
-def find_critical_speed(func, diffFunc, x0, epochs=50):
-    """
-    Находит граничное значение speed методом бинарного поиска
-    """
-    low = 0.01
-    high = 1.0
-    tolerance = 0.001
-
-    for _ in range(20):
+    while high - low > tol:
         mid = (low + high) / 2
-        x_vals, _ = gradientDescend(func, diffFunc, x0, mid, epochs)
+        x_list, _ = gradientDescend(func, diffFunc, x0, mid, 100)
 
-
-        if abs(x_vals[-1]) < 10 and not np.isnan(x_vals[-1]):
+        if np.isfinite(x_list[-1]) and abs(x_list[-1] - x_list[-2]) < 1.0:
             low = mid
         else:
             high = mid
@@ -77,13 +75,22 @@ def find_critical_speed(func, diffFunc, x0, epochs=50):
     return (low + high) / 2
 
 
+if __name__ == "__main__":
+    x0 = 2.0
+    speed = 0.03
+    epochs = 100
 
-critical_speed = find_critical_speed(f, df, x0=x0)
-print(f"\nГраничное значение speed: {critical_speed:.4f}")
+    x_list, y_list = gradientDescend(f, df, x0, speed, epochs)
+    print(f"Начальная точка: x = {x0}")
+    print(f"Найденный минимум: x = {x_list[-1]:.6f}, f(x) = {y_list[-1]:.6f}")
 
+    plot_results(x_list, y_list, f, (-1, 3))
 
-print("\nПроверка сходимости при разных speed:")
-for test_speed in [critical_speed * 0.9, critical_speed, critical_speed * 1.1]:
-    test_x, _ = gradientDescend(f, df, x0, test_speed, epochs)
-    result = "сходится" if abs(test_x[-1]) < 10 else "расходится"
-    print(f"speed = {test_speed:.4f} - {result}")
+    critical_speed = find_critical_speed(f, df, x0)
+    print(f"\nКритическая скорость: {critical_speed:.6f}")
+
+    print("\nПроверка сходимости:")
+    for test_speed in [critical_speed * 0.9, critical_speed, critical_speed * 1.1]:
+        x_test, y_test = gradientDescend(f, df, x0, test_speed, 100)
+        status = "сходится" if abs(x_test[-1] - x_test[-2]) < 0.1 else "расходится"
+        print(f"speed = {test_speed:.4f}: {status} (x = {x_test[-1]:.4f})")
